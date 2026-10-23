@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Статьи блога</title>
+  <style>
+    body { max-width: 960px; margin: 40px auto; padding: 0 20px; font: 16px/1.6 sans-serif; color: #242424; }
+    .articles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; padding: 0; list-style: none; }
+    .article-card { overflow: hidden; border: 1px solid #ddd; border-radius: 12px; }
+    .article-card img { width: 100%; height: 240px; object-fit: cover; }
+    .article-card div { padding: 16px; }
+    .article-card h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Статьи блога</h1>
+    <ul class="articles">
+      {% for blog in blogs %}
+        <li class="article-card">
+          <a href="{% url 'blog:detail' blog.pk %}">
+            {% if blog.image %}<img src="{% static blog.image %}" alt="{{ blog.title }}">{% endif %}
+            <div><h2>{{ blog.title }}</h2><p>{{ blog.content|truncatewords:28 }}</p></div>
+          </a>
+        </li>
+      {% empty %}
+        <li>Пока нет статей.</li>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>

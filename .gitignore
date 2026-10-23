@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+django_blog/db.sqlite3
+django_blog/.venv/
+django_blog/venv/
+/site/
