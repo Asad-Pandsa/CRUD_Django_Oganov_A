@@ -19,6 +19,10 @@
       <p class="content">{{ blog.content }}</p>
       <p>Просмотры: <span id="view-count">{{ blog.likes }}</span></p>
     </article>
+    <p>
+      <a href="{% url 'blog:update' blog.pk %}">Редактировать статью</a> ·
+      <a href="{% url 'blog:delete' blog.pk %}">Удалить статью</a>
+    </p>
     <a href="{% url 'blog:list' %}">Вернуться к списку статей</a>
   </main>
 </body>

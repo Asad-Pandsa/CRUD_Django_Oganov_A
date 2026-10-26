@@ -124,3 +124,71 @@ class BlogDetailTests(TestCase):
         self.blog.refresh_from_db()
 
         self.assertEqual(self.blog.likes, 2)
+
+
+class BlogCRUDTests(TestCase):
+    def setUp(self):
+        self.blog = Blog.objects.create(
+            title="Исходная статья",
+            content="Исходное содержание",
+        )
+
+    def test_create_article(self):
+        response = self.client.post(
+            reverse("blog:create"),
+            {
+                "title": "Новая статья",
+                "content": "Новое содержание",
+                "image": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("blog:list"))
+        self.assertTrue(Blog.objects.filter(title="Новая статья").exists())
+
+    def test_invalid_create_does_not_save_article(self):
+        article_count = Blog.objects.count()
+        response = self.client.post(
+            reverse("blog:create"),
+            {"title": "", "content": "", "image": ""},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["form"].errors)
+        self.assertEqual(Blog.objects.count(), article_count)
+
+    def test_update_article(self):
+        response = self.client.post(
+            reverse("blog:update", args=[self.blog.pk]),
+            {
+                "title": "Обновленная статья",
+                "content": "Обновленное содержание",
+                "image": "",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("blog:detail", args=[self.blog.pk]),
+        )
+        self.blog.refresh_from_db()
+        self.assertEqual(self.blog.title, "Обновленная статья")
+        self.assertEqual(self.blog.content, "Обновленное содержание")
+
+    def test_delete_requires_post_confirmation(self):
+        url = reverse("blog:delete", args=[self.blog.pk])
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Blog.objects.filter(pk=self.blog.pk).exists())
+
+        response = self.client.post(url)
+
+        self.assertRedirects(response, reverse("blog:list"))
+        self.assertFalse(Blog.objects.filter(pk=self.blog.pk).exists())
+
+    def test_crud_pages_return_404_for_missing_article(self):
+        for name in ("update", "delete"):
+            with self.subTest(view=name):
+                response = self.client.get(reverse(f"blog:{name}", args=[99999]))
+                self.assertEqual(response.status_code, 404)
